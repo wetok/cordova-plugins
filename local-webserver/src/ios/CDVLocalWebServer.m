@@ -219,6 +219,11 @@
     BOOL allowRangeRequests = YES;
 
     NSString* directoryPath = [[self.commandDelegate pathForResource:indexPage] stringByDeletingLastPathComponent];
+    
+    CDVViewController* vc = (CDVViewController*)self.viewController;
+    if ([vc.wwwFolderName containsString:NSTemporaryDirectory()]) {
+        directoryPath = [[NSURL URLWithString:vc.wwwFolderName] path];
+    }
 ;
 
     GCDWebServerAsyncProcessBlock processRequestBlock = ^void (GCDWebServerRequest* request, GCDWebServerCompletionBlock complete) {
