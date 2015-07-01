@@ -24,6 +24,7 @@
 #import <AssetsLibrary/AssetsLibrary.h>
 #import <MobileCoreServices/MobileCoreServices.h>
 #import <objc/message.h>
+#import <netinet/in.h>
 
 
 #define LOCAL_FILESYSTEM_PATH   @"local-filesystem"
@@ -71,10 +72,15 @@
         }
     }
 #endif
+    
+    if (port == 0) {
+        // CB-9096 - actually test for an available port, and set it explicitly
+        port = [self _availablePort];
+    }
 
     NSString* authToken = [NSString stringWithFormat:@"cdvToken=%@", [[NSProcessInfo processInfo] globallyUniqueString]];
+
     self.server = [[GCDWebServer alloc] init];
-    [self.server startWithPort:port bonjourName:nil];
     [GCDWebServer setLogLevel:kGCDWebServerLoggingLevel_Error];
 
     if (useLocalWebServer) {
@@ -83,6 +89,9 @@
         // add after server is started to get the true port
         [self addFileSystemHandlers:authToken];
         [self addErrorSystemHandler:authToken];
+        
+        // handlers must be added before server starts
+        [self.server startWithPort:port bonjourName:nil];
 
         // Update the startPage (supported in cordova-ios 3.7.0, see https://issues.apache.org/jira/browse/CB-7857)
 		vc.startPage = [NSString stringWithFormat:@"http://localhost:%lu/%@/%@?%@", (unsigned long)self.server.port, appBasePath, indexPage, authToken];
@@ -93,13 +102,38 @@
             NSLog(@"%@", error);
 
             [self addErrorSystemHandler:authToken];
+            
+            // handlers must be added before server starts
+            [self.server startWithPort:port bonjourName:nil];
 
             vc.startPage = [self createErrorUrl:error authToken:authToken];
         } else {
             GWS_LOG_ERROR(@"%@ stopped, failed requirements check.", [self.server class]);
-            [self.server stop];
         }
     }
+}
+
+- (NSUInteger) _availablePort
+{
+    struct sockaddr_in addr4;
+    bzero(&addr4, sizeof(addr4));
+    addr4.sin_len = sizeof(addr4);
+    addr4.sin_family = AF_INET;
+    addr4.sin_port = 0; // set to 0 and bind to find available port
+    addr4.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    int listeningSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (bind(listeningSocket, (const void*)&addr4, sizeof(addr4)) == 0) {
+        struct sockaddr addr;
+        socklen_t addrlen = sizeof(addr);
+        if (getsockname(listeningSocket, &addr, &addrlen) == 0) {
+            struct sockaddr_in* sockaddr = (struct sockaddr_in*)&addr;
+            close(listeningSocket);
+            return ntohs(sockaddr->sin_port);
+        }
+    }
+    
+    return 0;
 }
 
 - (BOOL) checkRequirements
@@ -131,15 +165,16 @@
     [self addLocalFileSystemHandler:authToken];
     [self addAssetLibraryFileSystemHandler:authToken];
 
-    NSURL* localServerURL = [NSURL URLWithString:[NSString stringWithFormat:@"http://localhost:%lu", (unsigned long)self.server.port]];
-
     SEL sel = NSSelectorFromString(@"setUrlTransformer:");
+    __weak __typeof(self) weakSelf = self;
 
     if ([self.commandDelegate respondsToSelector:sel]) {
         NSURL* (^urlTransformer)(NSURL*) = ^NSURL* (NSURL* urlToTransform) {
+            NSURL* localServerURL = [NSURL URLWithString:[NSString stringWithFormat:@"http://localhost:%lu", (unsigned long)weakSelf.server.port]];
+            
             NSURL* transformedUrl = urlToTransform;
 
-            NSString* localhostUrlString = [NSString stringWithFormat:@"http://localhost:%lu", [localServerURL.port unsignedIntegerValue]];
+            NSString* localhostUrlString = [NSString stringWithFormat:@"http://localhost:%lu", (unsigned long)[localServerURL.port unsignedIntegerValue]];
 
             if ([[urlToTransform scheme] isEqualToString:ASSETS_LIBRARY_PATH]) {
                 transformedUrl = [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@/%@%@",
