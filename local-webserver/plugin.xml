@@ -41,8 +41,10 @@
 			    <param name="onload" value="true"/>
 		    </feature>
             <preference name="CordovaLocalWebServerStartOnSimulator" value="true" />
+			<access origin="http://localhost" />
         </config-file>
-
+		
+        
 	    <header-file src="src/ios/CDVLocalWebServer.h" />
 	    <source-file src="src/ios/CDVLocalWebServer.m" />
 
