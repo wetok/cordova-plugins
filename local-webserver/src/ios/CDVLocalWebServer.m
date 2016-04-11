@@ -226,9 +226,9 @@
         BOOL hasToken = (request.URL.query && [request.URL.query containsString:authToken]);
         NSString *cookie = [request.headers objectForKey:@"Cookie"];
         BOOL hasCookie = (cookie && [cookie containsString:authToken]);
-        if (!hasToken && !hasCookie) {
-            complete([GCDWebServerErrorResponse responseWithClientError:kGCDWebServerHTTPStatusCode_Forbidden message:@"FORBIDDEN"]);
-        }
+        // if (!hasToken && !hasCookie) {
+        //     complete([GCDWebServerErrorResponse responseWithClientError:kGCDWebServerHTTPStatusCode_Forbidden message:@"FORBIDDEN"]);
+        // }
 
         processRequestForResponseBlock(request, ^void(GCDWebServerResponse* response){
             if (response) {
