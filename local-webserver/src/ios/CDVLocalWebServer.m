@@ -220,17 +220,15 @@
         NSString *host = [request.headers objectForKey:@"Host"];
         if (host==nil || [host hasPrefix:@"localhost"] == NO ) {
             complete([GCDWebServerErrorResponse responseWithClientError:kGCDWebServerHTTPStatusCode_Forbidden message:@"FORBIDDEN"]);
-            return;
         }
 
         //check if the querystring or the cookie has the token
         BOOL hasToken = (request.URL.query && [request.URL.query containsString:authToken]);
         NSString *cookie = [request.headers objectForKey:@"Cookie"];
         BOOL hasCookie = (cookie && [cookie containsString:authToken]);
-        if (!hasToken && !hasCookie) {
-            complete([GCDWebServerErrorResponse responseWithClientError:kGCDWebServerHTTPStatusCode_Forbidden message:@"FORBIDDEN"]);
-            return;
-        }
+        // if (!hasToken && !hasCookie) {
+        //     complete([GCDWebServerErrorResponse responseWithClientError:kGCDWebServerHTTPStatusCode_Forbidden message:@"FORBIDDEN"]);
+        // }
 
         processRequestForResponseBlock(request, ^void(GCDWebServerResponse* response){
             if (response) {
@@ -241,7 +239,7 @@
 
             if (hasToken && !hasCookie) {
                 //set cookie
-                [response setValue:[NSString stringWithFormat:@"%@;path=/", authToken] forAdditionalHeader:@"Set-Cookie"];
+                [response setValue:authToken forAdditionalHeader:@"Set-Cookie"];
             }
             complete(response);
         });
@@ -255,11 +253,6 @@
     BOOL allowRangeRequests = YES;
 
     NSString* directoryPath = [[self.commandDelegate pathForResource:indexPage] stringByDeletingLastPathComponent];
-    
-    CDVViewController* vc = (CDVViewController*)self.viewController;
-    if ([vc.wwwFolderName containsString:NSTemporaryDirectory()]) {
-        directoryPath = [[NSURL URLWithString:vc.wwwFolderName] path];
-    }
 ;
 
     GCDWebServerAsyncProcessBlock processRequestBlock = ^void (GCDWebServerRequest* request, GCDWebServerCompletionBlock complete) {
