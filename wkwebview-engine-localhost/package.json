@@ -1,7 +1,7 @@
 {
-  "name": "cocoon-cordova-labs-local-webserver",
-  "version": "2.4.0",
-  "description": "Cordova Local Web Server Plugin (Cocoon Mod)",
+  "name": "cocoon-cordova-labs-wkwebview-engine-localhost",
+  "version": "0.5.0",
+  "description": "Cordova WKWebView Engine with HTTP Server Plugin (Cocoon Mod)",
   "cordova": {
     "id": "cocoon-cordova-labs-local-webserver",
     "platforms": [
@@ -14,8 +14,8 @@
   },
   "keywords": [
     "cordova",
-    "local web server",
-    "ecosystem:cordova",
+    "wkwebview",
+    "webview",
     "cordova-ios"
   ],
   "engines": [
@@ -29,8 +29,5 @@
   "bugs": {
     "url": "https://github.com/Collaborne/cordova-plugins/issues"
   },
-  "homepage": "https://github.com/Collaborne/cordova-plugins#readme",
-  "dependencies": {
-    "urijs": "^1.17.1"
-  }
+  "homepage": "https://github.com/Collaborne/cordova-plugins#readme"
 }
