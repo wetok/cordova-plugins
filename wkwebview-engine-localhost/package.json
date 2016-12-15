@@ -1,6 +1,6 @@
 {
   "name": "cocoon-cordova-labs-wkwebview-engine-localhost",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Cordova WKWebView Engine with HTTP Server Plugin (Cocoon Mod)",
   "cordova": {
     "id": "cocoon-cordova-labs-local-webserver",

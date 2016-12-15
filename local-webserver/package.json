@@ -1,6 +1,6 @@
 {
   "name": "cocoon-cordova-labs-local-webserver",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "description": "Cordova Local Web Server Plugin (Cocoon Mod)",
   "cordova": {
     "id": "cocoon-cordova-labs-local-webserver",
